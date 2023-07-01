@@ -3,7 +3,8 @@
 I found "https://geocode.maps.co/" website that alow API calls to get an address coordinates for free. 
 There is a limit of calls per second, se i added a sleep() to not exceed that limit. this made the API call slower.
 
-i didn't make a command line tool, but instead a web REST api so it's easier to call.
+I didn't make a command line tool, but instead a web REST api so it's easier to call.
+In addition, due to time constraints i would have added unit testing.
 
 # Questions
 ● What would you change in the code if the sample data set was very large ? How would you
