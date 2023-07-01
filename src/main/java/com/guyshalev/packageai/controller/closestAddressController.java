@@ -1,20 +1,29 @@
 package com.guyshalev.packageai.controller;
 
-import com.guyshalev.packageai.service.IAddressService;
+import com.guyshalev.packageai.model.response.ClosestPersonResponse;
+import com.guyshalev.packageai.service.IOrderPersonAddressService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("address")
 public class closestAddressController {
 
     @Autowired
-    private IAddressService addressService;
+    private IOrderPersonAddressService orderPersonAddressService;
 
     @PutMapping("/load")
     public void loadAddresses() {
-        addressService.loadAddresses();
+        orderPersonAddressService.loadAddresses();
+    }
+
+    @GetMapping("/nearestNPeopleToAddress")
+    public ClosestPersonResponse findNearestNPeopleToAddress(@RequestParam("address") String address, @RequestParam("nearestNPeople") int nearestNPeople) {
+        return orderPersonAddressService.findNearestNPeopleToAddress(address, nearestNPeople);
+    }
+
+    @GetMapping("/nearest3PeopleToAddress")
+    public String findNearest3PeopleToAddress(@PathVariable("address") String address) {
+        return orderPersonAddressService.findNearest3PeopleToAddress(address);
     }
 }
