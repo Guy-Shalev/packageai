@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.guyshalev.packageai.dal.IAddressDAL;
 import com.guyshalev.packageai.model.OrderPersonAddress;
+import com.guyshalev.packageai.model.dto.ClosestPerson;
 import com.guyshalev.packageai.model.dto.GeocodingLocation;
 import com.guyshalev.packageai.model.response.ClosestPersonResponse;
 import com.guyshalev.packageai.service.IOrderPersonAddressService;
@@ -19,10 +20,7 @@ import org.springframework.stereotype.Service;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.ObjectUtils.isEmpty;
@@ -53,16 +51,55 @@ public class OrderPersonOrderPersonAddressService implements IOrderPersonAddress
         addressDAL.saveAll(orderPersonAddress);
     }
 
+    /**
+     * Returns the details of the first N people from the sample data that live closest to the new
+     * address, ranked by distance
+     *
+     * @param address        - an address to find the nearest N people to
+     * @param nearestNPeople - how many people to return
+     * @return - a list of nearest N people closest to a given address
+     */
     @Override
     public ClosestPersonResponse findNearestNPeopleToAddress(String address, int nearestNPeople) {
         ImmutablePair<Double, Double> addressLocation = getAddressLocation(address);
+        List<OrderPersonAddress> allOrderPersonAddress = addressDAL.findAll();
 
+        // Calculate the distance between the input address and each person in the database
+        List<ClosestPerson> distances = new ArrayList<>();
+        for (OrderPersonAddress orderPersonAddress : allOrderPersonAddress) {
+            try {
+                Thread.sleep(500);// this is due to "geocode.maps.co" limit on calls per second
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            ImmutablePair<Double, Double> addressLocationFromDB = getAddressLocation(orderPersonAddress.getAddress());
 
-        return null;
+            if (addressLocationFromDB.getLeft() != null && addressLocationFromDB.getRight() != null) {
+                double distance = calculateDistance(
+                        addressLocation.getLeft(),
+                        addressLocation.getRight(),
+                        addressLocationFromDB.getLeft(),
+                        addressLocationFromDB.getRight()
+                );
+                distances.add(new ClosestPerson(orderPersonAddress.getOrderNumber(),
+                        orderPersonAddress.getFirstName(), orderPersonAddress.getLastName(), distance));
+            }
+        }
+
+        // Sort the people by distance in ascending order
+        distances.sort(Comparator.comparingDouble(ClosestPerson::getDistanceToAddress));
+
+        // Return the details of the closest N people
+        List<ClosestPerson> closestPeople = new ArrayList<>();
+        for (int i = 0; i < nearestNPeople && i < distances.size(); i++) {
+            closestPeople.add(distances.get(i));
+        }
+
+        return new ClosestPersonResponse(closestPeople);
     }
 
     /**
-     * Calling "https://geocode.maps.co/" to get the address coordinates
+     * Calling "<a href="https://geocode.maps.co/">geocode.maps.co</a>" to get the address coordinates
      * In a real world scenario (given more time) this call would be part of a system that can change the API vendor
      * easily by implementing Factory design pattern to get an interface for different API vendors.
      *

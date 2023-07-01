@@ -5,23 +5,23 @@ public class ClosestPerson {
     private String order;
     private String firstName;
     private String lastName;
-    private String DistanceToAddress;
+    private double DistanceToAddress;
 
     public ClosestPerson() {
     }
 
-    public ClosestPerson(String order, String firstName, String lastName, String distanceToAddress) {
+    public ClosestPerson(String order, String firstName, String lastName, double distanceToAddress) {
         this.order = order;
         this.firstName = firstName;
         this.lastName = lastName;
         DistanceToAddress = distanceToAddress;
     }
 
-    public String getDistanceToAddress() {
+    public double getDistanceToAddress() {
         return DistanceToAddress;
     }
 
-    public void setDistanceToAddress(String distanceToAddress) {
+    public void setDistanceToAddress(double distanceToAddress) {
         DistanceToAddress = distanceToAddress;
     }
 

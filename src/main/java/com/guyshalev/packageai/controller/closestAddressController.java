@@ -23,7 +23,7 @@ public class closestAddressController {
     }
 
     @GetMapping("/nearest3PeopleToAddress")
-    public String findNearest3PeopleToAddress(@PathVariable("address") String address) {
+    public String findNearest3PeopleToAddress(@RequestParam("address") String address) {
         return orderPersonAddressService.findNearest3PeopleToAddress(address);
     }
 }
